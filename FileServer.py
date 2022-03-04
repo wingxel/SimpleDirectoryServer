@@ -35,7 +35,7 @@ def port_is_available(prt: int) -> bool:
 		cs = socket(AF_INET, SOCK_STREAM)
 		cs.connect(("", prt))
 		cs.close()
-	except ConnectionRefusedError as error:
+	except ConnectionRefusedError:
 		return True
 	return False
 
@@ -58,9 +58,11 @@ def get_args() -> str:
 				try:
 					tempPort = eval(arg)
 					if port_is_available(tempPort):
-						data["port"]
+						data["port"] = tempPort
+					else:
+						print(f"Port {tempPort} is not available, defaulting to {data['port']}")
 				except NameError as err:
-					pass
+					print(f"Invalid port number : {str(err)}")
 			if opt in ["-d", "--directory"]:
 				data["directory"] = arg
 	except Exception as error:
@@ -68,8 +70,9 @@ def get_args() -> str:
 	return data
 
 
-port = get_args()["port"]
-dr = get_args()["directory"]
+ar = get_args()
+port = ar["port"]
+dr = ar["directory"]
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -113,6 +116,8 @@ def start_network() -> str:
 			print("To view the password of the hotspot got to:\nSettings => WI-FI => WI-FI Hotspot")
 		except Exception as error:
 			print(f"An error occurred : {error}")
+	if len(result) > 0:
+		print(f"{datetime.now()} : Hotspot started")
 	return result
 
 
