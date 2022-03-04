@@ -2,7 +2,7 @@
 
 Serves a directory through HTTP on LAN.
 
-In windows run the script as administrator.
+In windows, run the script as administrator.
 
 ### Run:
 
