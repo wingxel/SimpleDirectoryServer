@@ -107,6 +107,7 @@ def start_network() -> str:
 		try:
 			subprocess.call(["netsh", "wlan", "set", "hostednetwork", "mode=allow", f"ssid={identity}", f"key={key}"])
 			subprocess.call(["netsh", "wlan", "start", "hostednetwork"])
+			print(f"Hotspot ssid: {identity} key: {key}")
 		except Exception as error:
 			print(f"An error occurred : {error}")
 		result = "Successfully started hotspot"
@@ -138,13 +139,11 @@ def stop_network() -> str:
 
 
 def main() -> None:
-	identity = ""
-	key = ""
 	net = start_network()
 	try:
 		with socketserver.TCPServer(("", port), Handler) as httpd:
 			print(f"{datetime.now()} : Serving {dr} at port {port}")
-			print(f"Network: {identity} key: {key} =>" if platform.system().lower() == "windows" else net)
+			print(net)
 			httpd.serve_forever()
 	except KeyboardInterrupt:
 		print(stop_network())
