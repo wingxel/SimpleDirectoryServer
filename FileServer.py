@@ -110,6 +110,7 @@ def start_network() -> str:
 			print(f"Hotspot ssid: {identity} key: {key}")
 		except Exception as error:
 			print(f"An error occurred : {error}")
+			result = ""
 		result = "Successfully started hotspot"
 	elif platform.system().lower() == "linux":
 		try:
@@ -117,6 +118,7 @@ def start_network() -> str:
 			print("To view the password of the hotspot got to:\nSettings => WI-FI => WI-FI Hotspot")
 		except Exception as error:
 			print(f"An error occurred : {error}")
+			result = ""
 	if len(result) > 0:
 		print(f"{datetime.now()} : Hotspot started")
 	return result
