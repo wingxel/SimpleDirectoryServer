@@ -16,24 +16,28 @@ import socketserver
 
 
 from pathlib import Path
-from random import randint
 from datetime import datetime
 from socket import socket, AF_INET, SOCK_STREAM
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler
 
 
 def usage() -> None:
 	print("""Usage:
 -h or --help            This help text.
--p or --port			Port to listen at.
+-p or --port            Port to listen at.
 -d or --directory       Directory to serve.
-Example FileServer.py  -d /home/user/Music -p 8000""")
+Example:
+python3 FIleServer.py  -d /home/user/Music -p 8000""")
+
+
+def get_random_hex(length: int = 8) -> str:
+    return os.urandom(length).hex()
 
 
 def port_is_available(prt: int) -> bool:
 	try:
 		cs = socket(AF_INET, SOCK_STREAM)
-		cs.connect(("", prt))
+		cs.connect(("localhost", prt))
 		cs.close()
 	except ConnectionRefusedError:
 		return True
@@ -80,34 +84,16 @@ class Handler(SimpleHTTPRequestHandler):
 		super().__init__(*args, directory=dr, **kwargs)
 
 
-def get_random_text(length: int) -> str:
-	name_list = []
-	for i in range(0, length):
-		name_list.append(chr(randint(ord('a'), ord('z'))))
-	return "".join(name_list) + str(randint(12, 100))
-
-
-def get_random_key(length: int = 8) -> str:
-	key_list = []
-	for i in range(0, (length * 2)):
-		key_list.append(chr(randint(ord('a'), ord('z'))))
-		key_list.append(chr(randint(ord('A'), ord('Z'))))
-		key_list.append(str(randint(1, 9)))
-	key = []
-	for i in range(0, length):
-		key.append(key_list[randint(0, len(key_list) - 1)])
-	return "".join(key)
-
-
 def start_network() -> str:
 	result = ""
 	if platform.system().lower() == "windows":
-		identity = get_random_text(10)
-		key = get_random_key(10)
+		identity = get_random_hex()
+		key = get_random_hex(4)
 		try:
 			subprocess.call(["netsh", "wlan", "set", "hostednetwork", "mode=allow", f"ssid={identity}", f"key={key}"])
 			subprocess.call(["netsh", "wlan", "start", "hostednetwork"])
-			print(f"Hotspot ssid: {identity} key: {key}")
+			ipconfig_res = subprocess.getoutput("ipconfig")
+			print(f"{ipconfig_res}\n\nHotspot ssid: {identity} key: {key}")
 		except Exception as error:
 			print(f"An error occurred : {error}")
 			result = ""
@@ -115,7 +101,8 @@ def start_network() -> str:
 	elif platform.system().lower() == "linux":
 		try:
 			result = subprocess.getoutput("nmcli connection up Hotspot")
-			print("To view the password of the hotspot got to:\nSettings => WI-FI => WI-FI Hotspot")
+			ifconfig_res = subprocess.getoutput("ifconfig")
+			print(f"{ifconfig_res}\n\nTo view the password of the hotspot got to:\nSettings => WI-FI => WI-FI Hotspot")
 		except Exception as error:
 			print(f"An error occurred : {error}")
 			result = ""
@@ -146,6 +133,7 @@ def main() -> None:
 		with socketserver.TCPServer(("", port), Handler) as httpd:
 			print(f"{datetime.now()} : Serving {dr} at port {port}")
 			print(net)
+			print("Press Ctrl + C to exit")
 			httpd.serve_forever()
 	except KeyboardInterrupt:
 		print(stop_network())
@@ -154,7 +142,8 @@ def main() -> None:
 			sys.exit(0)
 		except SystemExit:
 			os._exit(0)
-	except Exception:
+	except Exception as err:
+		print(f"Error => {str(err)}")
 		print(stop_network())
 
 
