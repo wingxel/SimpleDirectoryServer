@@ -6,4 +6,6 @@ In windows, run the script as administrator.
 
 ### Run:
 
-	- python3 FileServer.py -d /directory/to/serve -p port_number
+```shell
+python3 FileServer.py -d /directory/to/serve -p port_number
+```
